@@ -1,0 +1,29 @@
+# UTF-8
+# Windows version resource for LocalRAG.exe (right-click the .exe > Properties > Details).
+# Keep filevers/prodvers in step with APP_VERSION in rag_engine.py.
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 0, 0, 0),
+    prodvers=(1, 0, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable('040904B0', [
+        StringStruct('CompanyName', 'KAUST Academy'),
+        StringStruct('FileDescription', 'LocalRAG - ask your documents'),
+        StringStruct('FileVersion', '1.0.0'),
+        StringStruct('InternalName', 'LocalRAG'),
+        StringStruct('LegalCopyright', 'GPL-3.0. Sample documents: GitLab Handbook, CC BY-SA 4.0'),
+        StringStruct('OriginalFilename', 'LocalRAG.exe'),
+        StringStruct('ProductName', 'LocalRAG'),
+        StringStruct('ProductVersion', '1.0.0')])
+    ]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)

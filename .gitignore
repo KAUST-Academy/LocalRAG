@@ -1,0 +1,8 @@
+# build environments and build output (the zips are attached to GitHub releases)
+.venv/
+.venv-cpu/
+app/build/
+app/dist/
+app/build_*.log
+__pycache__/
+*.pyc

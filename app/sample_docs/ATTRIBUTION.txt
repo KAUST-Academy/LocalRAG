@@ -1,0 +1,2 @@
+These 38 pages are from the GitLab Handbook (https://handbook.gitlab.com), repository gitlab-com/content-sites/handbook at commit df66e66b937d38c1ed4e3dd452927ddf01be58b0.
+Text (c) GitLab Inc., licensed CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/

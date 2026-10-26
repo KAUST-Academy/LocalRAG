@@ -1,0 +1,13 @@
+# What LocalRAG needs, pinned to the versions it was built and tested with (2026-10-26, Python 3.14).
+# torch is not listed: build.ps1 installs the CUDA or the CPU wheel from download.pytorch.org.
+transformers==5.20.2
+accelerate==1.15.0
+sentence-transformers==6.2.0
+chromadb==1.5.9
+huggingface_hub==2.3.0
+pypdf==6.21.2
+python-docx==1.2.0
+psutil==7.2.2
+# the build tool
+pyinstaller==6.22.3
+pyinstaller-hooks-contrib==2026.9

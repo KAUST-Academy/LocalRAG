@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>From .py to .exe</title>
+<!-- Source of ..\Python_to_EXE_Guide.pdf. Rebuild the PDF with:  powershell -File make_pdf.ps1
+     Design: the KAUST Academy presentation template (navy, gold numbers, upper-case Raleway headings, Open Sans text). -->
+<style>
+  @font-face { font-family: "Raleway"; src: url("fonts/Raleway-Variable.ttf") format("truetype"); font-weight: 100 900; }
+  @font-face { font-family: "Open Sans"; src: url("fonts/OpenSans-Variable.ttf") format("truetype"); font-weight: 300 800; }
+  @page {
+    size: A4;
+    margin: 20mm 17mm 18mm 17mm;
+    @top-left { content: "FROM .PY TO .EXE"; font: 700 6.8pt "Raleway"; letter-spacing: 2pt; color: #8a939c; }
+    @top-right { content: "KAUST ACADEMY"; font: 800 6.8pt "Raleway"; letter-spacing: 2pt; color: #003B75; }
+    @bottom-left { content: "LocalRAG \00B7  the Day 2 RAG lab as a Windows program"; font: 7pt "Open Sans"; color: #8a939c; }
+    @bottom-right { content: counter(page); font: 800 9pt "Raleway"; color: #F0B500; }
+  }
+  @page :first { margin: 0; @top-left { content: none; } @top-right { content: none; } @bottom-left { content: none; } @bottom-right { content: none; } }
+  :root { --navy: #003B75; --navy-deep: #002C58; --gold: #F0B500; --orange: #F18F00; --teal: #00A6AA; --lime: #CDCE00;
+          --ink: #1F2933; --quiet: #5B6470; --line: #D9DCDF; --paper: #F3F4F5; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font: 9.6pt/1.5 "Open Sans", sans-serif; color: var(--ink); margin: 0; }
+  b, strong { font-weight: 650; }
+  p { margin: 0 0 6pt; }
+  p.lead { font-size: 10.6pt; line-height: 1.5; margin-bottom: 9pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  li::marker { color: var(--navy); font-weight: 700; }
+  a { color: #0B5CAD; }
+  code { font-family: "Cascadia Mono", Consolas, monospace; font-size: 8.4pt; background: var(--paper); padding: 0.4pt 3pt;
+         border-radius: 2pt; color: var(--navy-deep); }
+  pre { font-family: "Cascadia Mono", Consolas, monospace; font-size: 7.9pt; line-height: 1.42; background: var(--paper);
+        padding: 7pt 10pt; margin: 4pt 0 10pt; white-space: pre-wrap; break-inside: avoid; border-radius: 4pt; color: var(--ink); }
+  pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+  pre .c { color: #00797C; }
+
+  /* section bands: the template's section slides (navy, gold number, white upper-case title), logo on the right */
+  .band { background: var(--navy); color: white; display: flex; align-items: center; padding: 0 7mm; height: 22mm;
+          margin: 0 0 9pt; break-after: avoid; }
+  .band .n { font: 800 25pt "Raleway"; color: var(--gold); margin-right: 5mm; }
+  .band h2 { font: 800 15.5pt "Raleway"; letter-spacing: 1.2pt; text-transform: uppercase; margin: 0; flex: 1; }
+  .band img { height: 12mm; }
+  section { margin-bottom: 12pt; }
+  section.page { break-before: page; }
+  h3 { font: 800 10.2pt "Raleway"; color: var(--navy); text-transform: uppercase; letter-spacing: 0.7pt; margin: 14pt 0 5pt;
+       break-after: avoid; display: flex; align-items: center; }
+  h3::before { content: ""; width: 7pt; height: 7pt; background: var(--gold); margin-right: 7pt; flex: none; }
+  h3.teal::before { background: var(--teal); } h3.orange::before { background: var(--orange); } h3.lime::before { background: var(--lime); }
+
+  table { border-collapse: separate; border-spacing: 0; width: 100%; margin: 4pt 0 11pt; font-size: 8.5pt; break-inside: avoid; }
+  th { background: var(--navy); color: white; font-weight: 650; text-align: left; padding: 4pt 7pt; vertical-align: bottom; }
+  td { padding: 4pt 7pt; vertical-align: top; border-bottom: 0.75pt solid white; }
+  tr:nth-child(even) td { background: var(--paper); }
+  td:first-child { font-weight: 650; color: var(--navy-deep); }
+  td.plain:first-child, table.plain td:first-child { font-weight: 400; color: var(--ink); }
+  td code, th code { font-size: 7.7pt; background: none; padding: 0; }
+  th code { color: white; }
+  table.dense { font-size: 8.1pt; }
+  table.dense td, table.dense th { padding: 2.6pt 6pt; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  th.num { text-align: right; }
+
+  /* callouts: the template's icon tiles (a white glyph on a coloured square) */
+  .note { display: flex; gap: 9pt; background: var(--paper); padding: 8pt 10pt; margin: 6pt 0 11pt; break-inside: avoid; border-radius: 3pt; }
+  .note .tile { flex: none; width: 20pt; height: 20pt; background: var(--gold); color: white; font: 800 12pt/20pt "Raleway";
+                text-align: center; }
+  .note.teal .tile { background: var(--teal); } .note.orange .tile { background: var(--orange); }
+  .note .body { flex: 1; }
+  .note .body pre { background: white; margin-bottom: 4pt; }
+  .note b.t { font: 800 8.6pt "Raleway"; text-transform: uppercase; letter-spacing: 0.6pt; color: var(--navy); }
+  .hit { display: inline-block; font: 800 6pt "Raleway"; letter-spacing: 0.8pt; color: white; background: var(--orange);
+         border-radius: 6pt; padding: 0.5pt 5pt; margin-left: 3pt; vertical-align: 1pt; white-space: nowrap; }
+  figure { margin: 6pt 0 12pt; break-inside: avoid; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figure img.shot { width: 100%; display: block; border: 0.75pt solid var(--line); }
+  figcaption { font-size: 8pt; color: var(--quiet); margin-top: 4pt; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14pt; }
+  .check { list-style: none; padding-left: 0; }
+  .check li { padding-left: 14pt; position: relative; }
+  .check li::before { content: ""; position: absolute; left: 0; top: 3pt; width: 7pt; height: 7pt; border: 1pt solid var(--navy); }
+  .small { font-size: 8pt; color: var(--quiet); }
+
+  /* cover */
+  .cover { position: relative; width: 210mm; height: 297mm; background: #023A73; color: white; overflow: hidden; break-after: page; }
+  .cover .art { position: absolute; left: 0; top: 0; width: 210mm; }
+  .cover .logo { position: absolute; right: 13mm; top: 13mm; width: 60mm; }
+  .cover .text { position: absolute; left: 17mm; right: 17mm; top: 130mm; }
+  .cover .kicker { font: 800 9pt "Raleway"; letter-spacing: 3pt; color: var(--gold); margin-bottom: 4mm; }
+  .cover h1 { font: 800 42pt/1 "Raleway"; letter-spacing: 1pt; margin: 0 0 6mm; }
+  .cover .sub { font: 400 15pt/1.35 "Open Sans"; color: #DCE6F2; margin: 0 0 4mm; max-width: 165mm; }
+  .cover .example { font: 400 10pt/1.5 "Open Sans"; color: #B7C7DB; max-width: 165mm; margin: 0; }
+  .cover .toc { position: absolute; left: 17mm; right: 17mm; top: 207mm; columns: 2; column-gap: 12mm; font: 400 9.6pt "Open Sans";
+                border-top: 0.75pt solid rgba(255,255,255,0.35); padding-top: 5mm; }
+  .cover .toc div { margin-bottom: 2.4mm; break-inside: avoid; }
+  .cover .toc b { font: 800 9.6pt "Raleway"; color: var(--gold); display: inline-block; width: 8mm; }
+  .cover .meta { position: absolute; left: 17mm; right: 17mm; bottom: 12mm; font: 400 8pt "Open Sans"; color: #B7C7DB; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================== cover -->
+<div class="cover">
+  <img class="art" src="img/lowpoly.jpg" alt="">
+  <img class="logo" src="img/kaust_academy_logo_white.png" alt="KAUST Academy">
+  <div class="text">
+    <div class="kicker">A KAUST ACADEMY GUIDE</div>
+    <h1>FROM .PY TO .EXE</h1>
+    <p class="sub">Turning a Python lab into a Windows program that people start with a double-click</p>
+    <p class="example">Worked example: <b>LocalRAG</b>, the Day 2 RAG lab rebuilt as a desktop app (a folder of documents &rarr; a vector DB &rarr; cited answers from Qwen3.5-4B, every step logged) and packaged with PyInstaller.</p>
+  </div>
+  <div class="toc">
+    <div><b>01</b>The whole process on one page</div>
+    <div><b>02</b>How PyInstaller works</div>
+    <div><b>03</b>Make your code freeze-friendly</div>
+    <div><b>04</b>A clean build environment</div>
+    <div><b>05</b>What PyInstaller cannot see</div>
+    <div><b>06</b>Build, then test like your users</div>
+    <div><b>07</b>Share it</div>
+    <div><b>08</b>Troubleshooting</div>
+    <div><b>09</b>Worked example: LocalRAG</div>
+    <div><b>A</b>Checklist before you send the zip</div>
+    <div><b>B</b>Other packaging tools</div>
+  </div>
+  <div class="meta">October 2026 &middot; Windows 10/11, 64-bit &middot; Python 3.14 &middot; PyInstaller 6.22.3 &middot; every number in this guide was measured on the LocalRAG build<br>Source, downloads and this guide: <b style="color:white">github.com/KAUST-Academy/LocalRAG</b></div>
+</div>
+
+<!-- ============================================================== 01 -->
+<section>
+<div class="band"><span class="n">01</span><h2>The whole process on one page</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<p class="lead">PyInstaller copies your script, a Python interpreter and every package the script imports into one folder, with an <code>.exe</code> in front. The people you send it to unzip the folder and double-click the <code>.exe</code>. They never install Python, pip or a notebook.</p>
+<ol>
+  <li><b>Get the script running in a fresh virtual environment.</b> A notebook first becomes a script (Section 03).
+<pre><code>py -3.14 -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt pyinstaller
+python my_app.py</code></pre></li>
+  <li><b>Freeze it.</b>
+<pre><code>pyinstaller --windowed --name MyApp --icon app.ico my_app.py</code></pre></li>
+  <li><b>Run <code>dist\MyApp\MyApp.exe</code></b> on your PC, then on a PC that has never seen Python (Section 06).</li>
+  <li><b>Zip the <code>dist\MyApp</code> folder and share the zip</b> (Section 07).</li>
+</ol>
+<table>
+  <tr><th style="width:30%">What the command leaves</th><th>What it is</th></tr>
+  <tr><td><code>dist\MyApp\MyApp.exe</code></td><td>What people double-click: a small launcher that starts the bundled Python on your script.</td></tr>
+  <tr><td><code>dist\MyApp\_internal\</code></td><td>Python itself, your code, every package and DLL. It always travels with the <code>.exe</code>.</td></tr>
+  <tr><td><code>MyApp.spec</code></td><td>The build recipe PyInstaller wrote. Edit it, then rebuild with <code>pyinstaller MyApp.spec</code>.</td></tr>
+  <tr><td><code>build\</code></td><td>Scratch space, plus the report <code>warn-MyApp.txt</code>. Never ship it.</td></tr>
+</table>
+<div class="note"><div class="tile">!</div><div class="body"><b class="t">The command is the easy part</b><br>The work is in three places: code that still finds its files once frozen (Section 03), imports PyInstaller cannot see (Section 05), and testing on a PC that is not yours (Section 06).</div></div>
+</section>
+
+<!-- ============================================================== 02 -->
+<section>
+<div class="band"><span class="n">02</span><h2>How PyInstaller works</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<figure>
+<svg viewBox="0 0 760 330" role="img" aria-label="PyInstaller follows the imports and copies everything into one folder" font-family="Open Sans, sans-serif">
+  <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5B6470"/></marker></defs>
+  <text x="20" y="24" font-size="15" font-weight="800" fill="#003B75" font-family="Raleway">PyInstaller follows the imports and copies everything into one folder</text>
+  <rect x="20" y="48" width="232" height="120" fill="white" stroke="#003B75" stroke-width="1.25"/>
+  <text x="34" y="72" font-size="12.5" font-weight="700" fill="#003B75">Your project</text>
+  <text x="34" y="95" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">local_rag.py</text><text x="134" y="95" font-size="10.5" fill="#5B6470">the entry point</text>
+  <text x="34" y="113" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">rag_engine.py</text>
+  <text x="34" y="131" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">assets\  fonts, logos</text>
+  <text x="34" y="149" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">LocalRAG.spec</text><text x="134" y="149" font-size="10.5" fill="#5B6470">the recipe</text>
+  <rect x="20" y="188" width="232" height="120" fill="white" stroke="#003B75" stroke-width="1.25"/>
+  <text x="34" y="212" font-size="12.5" font-weight="700" fill="#003B75">.venv, the build environment</text>
+  <text x="34" y="235" font-size="11" fill="#1F2933">Python 3.14</text>
+  <text x="34" y="253" font-size="11" fill="#1F2933">torch, transformers, chromadb</text>
+  <text x="34" y="271" font-size="11" fill="#1F2933">sentence-transformers, pypdf, ...</text>
+  <text x="34" y="289" font-size="11" fill="#1F2933">PyInstaller 6.22 + its hooks</text>
+  <rect x="290" y="48" width="196" height="260" fill="#003B75"/>
+  <text x="388" y="76" font-size="13" font-weight="800" fill="white" text-anchor="middle" font-family="Raleway" letter-spacing="1.5">PYINSTALLER</text>
+  <g font-size="11" fill="white">
+    <text x="304" y="106"><tspan fill="#F0B500" font-weight="800">1</tspan>  Analysis: read the script,</text>
+    <text x="318" y="122">follow every import</text>
+    <text x="304" y="150"><tspan fill="#F0B500" font-weight="800">2</tspan>  Hooks: add the DLLs and</text>
+    <text x="318" y="166">data files packages need</text>
+    <text x="304" y="194"><tspan fill="#F0B500" font-weight="800">3</tspan>  Spec: your hidden imports,</text>
+    <text x="318" y="210">data files, excludes</text>
+    <text x="304" y="238"><tspan fill="#F0B500" font-weight="800">4</tspan>  Collect: copy it all</text>
+    <text x="304" y="266"><tspan fill="#F0B500" font-weight="800">5</tspan>  Bootloader: write the .exe</text>
+  </g>
+  <rect x="524" y="48" width="216" height="172" fill="white" stroke="#003B75" stroke-width="1.25"/>
+  <text x="538" y="72" font-size="12.5" font-weight="700" fill="#003B75">dist\LocalRAG\ (you ship this)</text>
+  <text x="538" y="96" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">LocalRAG.exe</text><text x="634" y="96" font-size="10.5" fill="#5B6470">the launcher</text>
+  <text x="538" y="116" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">_internal\</text>
+  <text x="552" y="134" font-size="10.5" fill="#5B6470">python314.dll, base_library.zip</text>
+  <text x="552" y="151" font-size="10.5" fill="#5B6470">torch\ transformers\ chromadb\</text>
+  <text x="552" y="168" font-size="10.5" fill="#5B6470">tcl\ tk\ assets\ ...</text>
+  <text x="538" y="198" font-size="10.5" fill="#5B6470">8,003 files, 2.97 GB (CUDA build)</text>
+  <rect x="524" y="250" width="216" height="58" fill="#F0B500" fill-opacity="0.16" stroke="#F0B500" stroke-width="2"/>
+  <text x="632" y="274" font-size="12.5" font-weight="700" fill="#003B75" text-anchor="middle">Their PC</text>
+  <text x="632" y="293" font-size="11" fill="#1F2933" text-anchor="middle">unzip, double-click LocalRAG.exe</text>
+  <g fill="none" stroke="#5B6470" stroke-width="1.25">
+    <path d="M252 108H288" marker-end="url(#a1)"/>
+    <path d="M252 248H288" marker-end="url(#a1)"/>
+    <path d="M486 134H522" marker-end="url(#a1)"/>
+    <path d="M632 220V248" marker-end="url(#a1)"/>
+  </g>
+  <text x="640" y="238" font-size="10.5" fill="#5B6470">zip, share</text>
+</svg>
+</figure>
+<p>PyInstaller starts from your script and follows every <code>import</code> statement through the packages installed in the active environment, recursively. <b>Hooks</b>, small recipes from the <code>pyinstaller-hooks-contrib</code> package, add what a package needs beyond its imports: torch's CUDA DLLs, tkinter's Tcl/Tk files, python-docx's templates. Everything found is copied into <code>_internal</code>. The <code>.exe</code> is a precompiled launcher (the <i>bootloader</i>) that starts the bundled Python on your script.</p>
+<p>Four consequences shape the rest of this guide:</p>
+<ul>
+  <li><b>Only imports written in the code are found.</b> A module loaded by name at run time, such as <code>importlib.import_module("pkg." + name)</code>, is missed. Section 05 shows how to add it.</li>
+  <li><b>Whatever the environment can import may be bundled.</b> Build in a virtual environment that holds only the app's packages.</li>
+  <li><b>It packages; it does not compile.</b> The code runs at the same speed and is easy to extract. Never put passwords or API keys in it.</li>
+  <li><b>No cross-building.</b> A Windows <code>.exe</code> is built on Windows (64-bit here). A Mac or Linux version needs a Mac or Linux machine.</li>
+</ul>
+</section>
+
+<!-- ============================================================== 03 -->
+<section class="page">
+<div class="band"><span class="n">03</span><h2>Make your code freeze-friendly</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<h3>From notebook to script</h3>
+<ul>
+  <li><code>jupyter nbconvert --to script lab.ipynb</code> writes <code>lab.py</code> from the code cells (or copy the cells by hand).</li>
+  <li>Delete what only runs in a notebook: <code>!pip install</code> lines, <code>%</code> magics, <code>display()</code>, <code>google.colab</code> calls. Replace Colab's file upload with a dialog: <code>tkinter.filedialog.askdirectory()</code>.</li>
+  <li>Put the steps in functions with one entry point: <code>def main(): ...</code> and <code>if __name__ == "__main__": main()</code>. LocalRAG keeps the lab's own functions (<code>clean</code>, <code>chunk_sections</code>, <code>search</code>, the grounded prompt) in <code>rag_engine.py</code> and the window in <code>local_rag.py</code>.</li>
+  <li>Pick the interface. A console program (<code>input()</code>, <code>print()</code>) needs a console build. For a window, <b>tkinter</b> ships with Python and freezes cleanly; LocalRAG uses it. PySide6 (Qt) looks more modern and adds 100 MB or more. Browser UIs such as Gradio or Streamlit run a web server and are much harder to freeze.</li>
+</ul>
+
+<h3 class="teal">Three kinds of files, three places</h3>
+<table>
+  <tr><th style="width:31%">Kind of file</th><th style="width:21%">Where it lives</th><th>How the code finds it</th></tr>
+  <tr><td>Read-only files you bundle (icon, fonts, logo)</td><td>inside <code>_internal</code></td><td><code>Path(getattr(sys, "_MEIPASS", ...))</code></td></tr>
+  <tr><td>Files people may open or replace (samples, models)</td><td>next to the <code>.exe</code></td><td><code>Path(sys.executable).parent</code> when <code>sys.frozen</code> is set</td></tr>
+  <tr><td>Files the program writes (settings, logs, session logs)</td><td>the user's profile</td><td><code>%LOCALAPPDATA%\MyApp</code>, never the program folder</td></tr>
+</table>
+<p>Never open <code>"data/x.json"</code> with a relative path. The current folder is wherever the program was started from (a shortcut, a terminal), not the folder of the <code>.exe</code>, and the program folder may be read-only, as under <code>C:\Program Files</code>. LocalRAG's three helpers:</p>
+<pre><code>def app_dir() -&gt; Path:
+    <span class="c">"""The folder of LocalRAG.exe when frozen by PyInstaller, else the folder of this file."""</span>
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+def data_dir() -&gt; Path:
+    <span class="c">"""Per-user writable folder for settings and logs: %LOCALAPPDATA%\LocalRAG."""</span>
+    d = Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local") / "LocalRAG"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+def resource(*parts) -&gt; Path:
+    <span class="c">"""A file bundled inside the app: PyInstaller puts those in sys._MEIPASS (the _internal folder)."""</span>
+    return Path(getattr(sys, "_MEIPASS", app_dir())).joinpath(*parts)</code></pre>
+
+<h3 class="orange">A windowed app has no console</h3>
+<p>With <code>--windowed</code>, <code>sys.stdout</code> and <code>sys.stderr</code> are <code>None</code>. The first library that prints (a progress bar, a warning) raises <code>AttributeError: 'NoneType' object has no attribute 'write'</code>, and a windowed app shows nothing: it just closes. Log to a file and point both streams at it before importing anything that prints:</p>
+<pre><code>def setup_logging():
+    log_dir = data_dir() / "logs"
+    log_dir.mkdir(exist_ok=True)
+    logging.basicConfig(filename=log_dir / "app.log", level=logging.INFO, encoding="utf-8")
+    logging.captureWarnings(True)                             <span class="c"># library warnings go to the log too</span>
+    if sys.stdout is None or sys.stderr is None:             <span class="c"># a windowed .exe</span>
+        console = open(log_dir / "console.log", "a", encoding="utf-8", buffering=1)
+        sys.stdout = sys.stdout or console
+        sys.stderr = sys.stderr or console</code></pre>
+<p>Switch progress bars off too (<code>HF_HUB_DISABLE_PROGRESS_BARS=1</code> for Hugging Face downloads), and make the log easy to reach. LocalRAG shows it live in a <i>Log</i> tab and writes every session to a readable Markdown file (Section 09): the log is the first thing you will ask a user for.</p>
+
+<h3 class="lime">Bundle your brand</h3>
+<p>Fonts, logos and icons are data files: put them in one <code>assets</code> folder and bundle the folder (Section 05). A font does not have to be installed to be used. On Windows, load it for your process only, with no installer and no admin rights, before creating the window:</p>
+<pre><code>import ctypes
+for name in ("Raleway-Bold.ttf", "OpenSans-Regular.ttf", "OpenSans-SemiBold.ttf"):
+    ctypes.windll.gdi32.AddFontResourceExW(str(resource("assets", "fonts", name)), 0x10, 0)   <span class="c"># 0x10 = FR_PRIVATE</span>
+root = tk.Tk()                                    <span class="c"># "Raleway" and "Open Sans" now work as font families</span></code></pre>
+<p>Fall back to a system font (Segoe UI) when loading fails, and ship the font's licence (Raleway and Open Sans: SIL Open Font License).</p>
+
+<h3>Five more habits</h3>
+<ul>
+  <li><b>Call <code>multiprocessing.freeze_support()</code> first in <code>main()</code>.</b> A frozen program that starts worker processes otherwise starts a fresh copy of itself for each one.</li>
+  <li><b>Open the window first, import heavy libraries after.</b> LocalRAG imports torch, transformers and chromadb in a background thread. The frozen window appears 0.7 s after a double-click and the libraries are ready about 5 s later (1.4 s and 11 s on a laptop running on battery).</li>
+  <li><b>Keep big files out of the bundle.</b> LocalRAG downloads each language model on first use, with a progress bar, into the Hugging Face cache. A 9.3 GB model inside <code>_internal</code> would make every update a 9.3 GB download. A <code>models\</code> folder next to the <code>.exe</code> serves classrooms without internet.</li>
+  <li><b>Check the hardware before using it.</b> A CUDA build of torch runs on PCs without NVIDIA GPUs, but an old GPU or driver fails at the first operation. Run one tiny GPU operation at start and fall back to the CPU if it fails; check free memory before loading a model.</li>
+  <li><b>Make the window sharp on high-DPI screens:</b> call <code>ctypes.windll.shcore.SetProcessDpiAwareness(1)</code> before creating it, or Windows stretches it and the text blurs.</li>
+</ul>
+
+<h3 class="teal">Add a self-test switch</h3>
+<p>A frozen app can fail where the source never does: a missing module, data file or DLL. Give the program a switch that runs the whole pipeline without the window and writes a report. LocalRAG's builds a DB from the sample folder, reopens it from disk, searches, loads a model, answers and writes a session log, so every import the buttons need is exercised. <code>build.ps1</code> runs it after each build and stops if it fails:</p>
+<pre><code>LocalRAG.exe --selftest --llm Qwen/Qwen3.5-0.8B --out selftest.txt</code></pre>
+<pre><code>LocalRAG 1.0.0 self-test · frozen=True · Python 3.14.6
+GPU: NVIDIA GeForce RTX 5070 Laptop GPU (8 GB) · 63 GB RAM
+brand fonts loaded: 5 of 5 · logo bundled: True
+built in 49.3 s: 1,160 chunks from 38 files · MiniLM-L6 (the lab&#x27;s model) · chunking: sections · built 2026-10-26
+reopened from C:\Users\Ali\AppData\Local\Temp\localrag_selftest_z6awmfpt: 1160 chunks
+  0.62  Global Travel and Expense Policy         | &#x27;### Meals: Company Provided while Traveling - Meals while trave...
+  0.53  Global Travel and Expense Policy         | &#x27;#### Additional Hotel Guidelines - Dry cleaning is allowable if...
+  0.49  Global Travel and Expense Policy         | &#x27;#### Travel Dates - Days before and after The company will cove...
+loaded Qwen3.5-0.8B in 3.1 s on GPU · NVIDIA GeForce RTX 5070 Laptop GPU
+answered: 439-token prompt, 51 tokens in 2.2 s (first after 0.5 s): The daily limit for meals while traveling for w...
+session log written: 5,255 bytes
+SELFTEST OK</code></pre>
+</section>
+
+<!-- ============================================================== 04 -->
+<section>
+<div class="band"><span class="n">04</span><h2>A clean build environment</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<ul>
+  <li><b>One virtual environment per app</b>, holding only what the app imports, plus PyInstaller. Everything importable there can end up in the bundle.</li>
+  <li><b>Pin the versions that worked</b> in <code>requirements.txt</code>, so a rebuild in six months produces the same program.</li>
+  <li><b>Choose a Python version for which every package has Windows wheels.</b> In October 2026, Python 3.14 works for LocalRAG's stack: torch 2.14.1, transformers 5.20.2, chromadb 1.5.9, PyInstaller 6.22.3.</li>
+  <li><b>Deep-learning apps: choose the torch build on purpose.</b> <code>pip install torch</code> from PyPI gives the CPU build on Windows; GPU builds come from download.pytorch.org. The choice decides most of the download size:</li>
+</ul>
+<table>
+  <tr><th style="width:11%">Build</th><th>Install command</th><th class="num" style="width:11%">torch on disk</th><th style="width:31%">Runs on</th></tr>
+  <tr><td>CUDA 13.0</td><td class="plain"><code>pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cu130</code></td><td class="num">3.12 GB</td><td>Any 64-bit Windows PC. Uses NVIDIA GPUs from the GTX 16 / RTX 20 series on (sm_75 to sm_120), else the CPU.</td></tr>
+  <tr><td>CPU</td><td class="plain"><code>pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu</code></td><td class="num">0.57 GB</td><td>Any 64-bit Windows PC, CPU only.</td></tr>
+</table>
+<p>LocalRAG's <code>requirements.txt</code> (torch is installed first, by <code>build.ps1</code>, from the index of the chosen build):</p>
+<pre><code>transformers==5.20.2
+accelerate==1.15.0
+sentence-transformers==6.2.0
+chromadb==1.5.9
+huggingface_hub==2.3.0
+pypdf==6.21.2
+python-docx==1.2.0
+psutil==7.2.2
+pyinstaller==6.22.3
+pyinstaller-hooks-contrib==2026.9</code></pre>
+</section>
+
+<!-- ============================================================== 05 -->
+<section>
+<div class="band"><span class="n">05</span><h2>What PyInstaller cannot see</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<p class="lead">Analysis finds <code>import</code> statements. Five kinds of things slip through; each has a typical error and a line in the <code>.spec</code> that fixes it.</p>
+<table>
+  <tr><th style="width:18%">Missed</th><th style="width:23%">Error at run time</th><th style="width:28%">Fix in the .spec <span style="font-weight:400">(CLI option)</span></th><th>LocalRAG's case</th></tr>
+  <tr><td>Modules imported by name at run time</td><td class="plain"><code>ModuleNotFoundError: No module named ...</code></td><td class="plain"><code>hiddenimports += collect_submodules("pkg")</code><br>(<code>--collect-submodules pkg</code>)</td><td class="plain">transformers loads each model family by name, such as <code>transformers.models.qwen3_5</code>; any model id can be typed in the app, so all of them go in.</td></tr>
+  <tr><td>Data files inside a package</td><td class="plain"><code>FileNotFoundError</code> for a <code>.json</code>, <code>.yaml</code> or template in site-packages</td><td class="plain"><code>datas += collect_data_files("pkg")</code><br>(<code>--collect-data pkg</code>)</td><td class="plain">python-docx's document template (its hook already does this).</td></tr>
+  <tr><td>A package that picks its parts from strings</td><td class="plain">both of the above</td><td class="plain"><code>collect_all("pkg")</code>: modules, data, DLLs<br>(<code>--collect-all pkg</code>)</td><td class="plain">chromadb chooses its implementation from settings strings like <code>"chromadb.api.rust.RustBindingsAPI"</code>.</td></tr>
+  <tr><td>Package metadata (the <code>.dist-info</code> folder)</td><td class="plain"><code>PackageNotFoundError</code>, <code>StopIteration</code>, <i>Failed to load context</i></td><td class="plain"><code>datas += copy_metadata("dist-name")</code><br>(<code>--copy-metadata dist-name</code>)</td><td class="plain">opentelemetry, used by chromadb, finds its context class through an entry point.</td></tr>
+  <tr><td>Your own files</td><td class="plain"><code>FileNotFoundError: ...icon.ico</code></td><td class="plain"><code>datas = [("assets", "assets")]</code><br>(<code>--add-data "assets:assets"</code>)</td><td class="plain">The icon, the KAUST Academy logo and the brand fonts, read through <code>resource()</code>.</td></tr>
+</table>
+
+<h3>LocalRAG.spec, the whole recipe</h3>
+<pre><code>import os, re
+from PyInstaller.utils.hooks import collect_all, collect_submodules, copy_metadata
+
+datas = [("assets", "assets")]          <span class="c"># (folder in the project, folder inside the bundle): icon, logos, fonts</span>
+binaries = []
+hiddenimports = []
+
+<span class="c"># chromadb picks its parts at run time from strings in its settings: take the whole package.</span>
+d, b, h = collect_all("chromadb")
+datas, binaries, hiddenimports = datas + d, binaries + b, hiddenimports + h
+
+<span class="c"># transformers imports each model's code lazily, by name: take every model family.</span>
+hiddenimports += collect_submodules("transformers")
+hiddenimports += collect_submodules("sentence_transformers")
+
+<span class="c"># Packages that look themselves up with importlib.metadata at run time need their metadata too.</span>
+for dist in ("chromadb", "opentelemetry-api", "opentelemetry-sdk", "transformers", "sentence-transformers",
+             "huggingface-hub", "tokenizers", "safetensors", "accelerate", "torch"):
+    datas += copy_metadata(dist)
+
+a = Analysis(["local_rag.py"], datas=datas, binaries=binaries, hiddenimports=hiddenimports,
+             excludes=["kubernetes", "onnxruntime",           <span class="c"># reachable from chromadb, never used here</span>
+                       "IPython", "jupyter_client", "notebook", "matplotlib", "pytest",
+                       "tensorboard", "torch.utils.tensorboard"])
+<span class="c"># cuDNN's engines (436 MB) only speed up convolutions: leave them out, the zip then fits GitHub's 2 GiB limit</span>
+a.binaries = [b for b in a.binaries if not re.match(r"cudnn_(?!graph)\w+64_9\.dll$", os.path.basename(b[0]), re.I)]
+pyz = PYZ(a.pure)
+exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="LocalRAG",
+          icon="assets/icon.ico", version="version_info.txt",  <span class="c"># Properties &gt; Details</span>
+          console=False,                                     <span class="c"># a window app, no black console</span>
+          upx=False)                                         <span class="c"># UPX breaks CUDA DLLs, alarms antivirus</span>
+coll = COLLECT(exe, a.binaries, a.datas, name="LocalRAG", upx=False)</code></pre>
+<p><b>Smaller bundles.</b> <code>excludes</code> drops packages that are reachable but never imported on your path. Here kubernetes (126 MB) and onnxruntime (48 MB) come only from chromadb's server and default-embedding code; the self-test proves the app runs without them.</p>
+<p><b>Dropping DLLs.</b> Filtering <code>a.binaries</code> removes files the hooks collected. LocalRAG's CUDA build was 2.25 GB zipped, over GitHub's 2 GiB limit per release file, and maximum zip compression only reached 2.10 GiB. cuDNN's DLLs (542 MB) only speed up convolutions, which text generation barely uses, and <code>pefile</code> showed that <code>torch_cuda.dll</code> links only the small <code>cudnn64_9.dll</code> loader. So the app sets <code>torch.backends.cudnn.enabled = False</code> in <code>rag_engine.cuda_ok()</code>; PyTorch's own kernels run Qwen3.5's small convolutions at the same speed.</p>
+<div class="note teal"><div class="tile">!</div><div class="body"><b class="t">The self-test earns its keep</b> <span class="hit">HIT IN THIS BUILD</span><br>The first build without all ten cuDNN DLLs passed every test from source, where the DLLs were still installed, and then the frozen self-test died without a traceback. Windows' Event Viewer (<i>Application</i>, event 1000) named the faulting module: <code>cudnn64_9.dll</code>, exception <code>0xc0000409</code>. PyTorch still asks the loader for cuDNN's version, and the loader needs its core library, <code>cudnn_graph64_9.dll</code>. Keeping that one (106 MB) and dropping the other nine (436 MB) passed the GPU self-tests with three embedding models and Qwen3.5. Test the frozen build, not only the source: the source has everything installed.</div></div>
+<h3 class="teal">Finding what is missing</h3>
+<ul>
+  <li>Build a console version (<code>console=True</code>, or <code>--console</code>) and start it from a terminal: the traceback appears there. A windowed build writes it to its log (Section 03).</li>
+  <li>Read <code>build\...\warn-LocalRAG.txt</code>: the imports PyInstaller could not resolve. Most are optional imports a package tries and skips (LocalRAG's has 1,124 lines and none matter); search it for the module named in your traceback.</li>
+  <li><code>--debug imports</code> prints every import as the frozen app starts.</li>
+</ul>
+</section>
+
+<!-- ============================================================== 06 -->
+<section>
+<div class="band"><span class="n">06</span><h2>Build, then test like your users</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<h3>One folder or one file?</h3>
+<table>
+  <tr><th style="width:16%"></th><th style="width:42%"><code>--onedir</code>, the default (LocalRAG)</th><th><code>--onefile</code></th></tr>
+  <tr><td>What you get</td><td class="plain">a folder: the <code>.exe</code> plus <code>_internal</code></td><td class="plain">a single <code>.exe</code></td></tr>
+  <tr><td>Start</td><td class="plain">runs in place: LocalRAG's window is up 0.7 s after a double-click</td><td class="plain">unpacks everything to <code>%TEMP%</code> on every start: minutes for a multi-GB app</td></tr>
+  <tr><td>Antivirus</td><td class="plain">rarely flagged</td><td class="plain">self-extracting programs are flagged more often</td></tr>
+  <tr><td>Use it for</td><td class="plain">anything with big libraries</td><td class="plain">small tools, up to roughly 100 MB</td></tr>
+</table>
+
+<h3 class="teal">One script for the whole build</h3>
+<p>LocalRAG's <code>build.ps1</code> runs the five steps every time, so nobody forgets one:</p>
+<pre><code>.\build.ps1              <span class="c"># CUDA build: uses an NVIDIA GPU when there is one, the CPU otherwise</span>
+.\build.ps1 -Torch cpu   <span class="c"># CPU-only build: a much smaller download</span></code></pre>
+<ol>
+  <li>Create the virtual environment from <code>requirements.txt</code> (first run only).</li>
+  <li>Run PyInstaller on <code>LocalRAG.spec</code>.</li>
+  <li>Copy what people should see next to the <code>.exe</code>: <code>sample_docs\</code>, <code>README.txt</code>, and the lab's 90 MB embedding model, so a first DB builds without internet.</li>
+  <li>Run the frozen self-test; stop if it fails.</li>
+  <li>Zip the folder.</li>
+</ol>
+<div class="note orange"><div class="tile">!</div><div class="body"><b class="t">Windows PowerShell 5.1 trap</b> <span class="hit">HIT IN THIS BUILD</span><br>With <code>$ErrorActionPreference = "Stop"</code>, PowerShell 5.1 turns every line a native tool writes to stderr into an error, and PyInstaller logs to stderr. The build died at its first <code>INFO</code> line with <i>NativeCommandError</i>. Run native tools with the preference set to <code>Continue</code> and judge them by their exit code:
+<pre><code>function Run([string] $What, [scriptblock] $Command) {
+    $ErrorActionPreference = "Continue"
+    &amp; $Command 2&gt;&amp;1 | ForEach-Object { "$_" }
+    if ($LASTEXITCODE -ne 0) { throw "$What failed (exit code $LASTEXITCODE)" }
+}
+Run "PyInstaller" { &amp; $python -m PyInstaller LocalRAG.spec --noconfirm --clean }</code></pre>
+A windowed <code>.exe</code> also returns to the prompt at once: wait for it with <code>Start-Process ... -Wait -PassThru</code> and read <code>.ExitCode</code>. And read its UTF-8 report with <code>Get-Content -Encoding UTF8</code>, or every &middot; prints as Â·.</div></div>
+
+<h3 class="orange">Test where your users are</h3>
+<ul>
+  <li><b>Windows Sandbox</b> (Windows 10/11 Pro or Enterprise: <i>Turn Windows features on or off</i> &rarr; <i>Windows Sandbox</i>) is a clean, throw-away Windows: no Python, no CUDA toolkit, no model caches, no fonts you installed. Copy the zip in, unzip, double-click. Everything is gone when you close it.</li>
+  <li><b>A path with spaces and non-English letters</b>, such as <code>C:\Users\سارة\Desktop\RAG lab\</code>. It catches code that assumes plain-ASCII paths.</li>
+  <li><b>No internet.</b> The program must say what it needs instead of hanging.</li>
+  <li><b>Small PCs.</b> 8 GB of RAM, no GPU, an old NVIDIA GPU, a 1080p laptop at 125 or 150 % scaling. LocalRAG checks that the GPU really works and that a model fits before loading it, and its sidebar scrolls when the screen is short.</li>
+  <li><b>Real use.</b> Start it twice, from a second user account, with a OneDrive-synced Documents folder.</li>
+</ul>
+</section>
+
+<!-- ============================================================== 07 -->
+<section>
+<div class="band"><span class="n">07</span><h2>Share it</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<ul>
+  <li><b>Zip</b> with the <code>tar</code> built into Windows 10/11; it handles archives over 4 GB:<br><code>tar.exe -a -c -f MyApp.zip -C dist MyApp</code>. PowerShell's <code>Compress-Archive</code> stops at 2 GB per file.</li>
+  <li><b>Size.</b> LocalRAG's CUDA build is 1.89 GB zipped (2.97 GB unzipped); the CPU build is 0.39 GB (0.88 GB).</li>
+  <li><b>Where.</b> A OneDrive, SharePoint or Google Drive link, or a USB stick for a classroom. GitHub Releases takes files up to 2 GiB (2.15 GB) each: both LocalRAG builds fit, the CUDA build after leaving out most of cuDNN (Section 05).</li>
+  <li><b>First start on their PC.</b> Windows shows <i>Windows protected your PC</i> for a new program that is not code-signed: <i>More info</i> &rarr; <i>Run anyway</i>. Say so in the README; LocalRAG's README does.</li>
+  <li><b>Antivirus.</b> False alarms come mostly from one-file builds and UPX compression. LocalRAG uses neither and carries a version resource. If a scanner still flags a build, submit the file to its vendor as a false positive.</li>
+  <li><b>Code signing</b> with your organization's certificate (<code>signtool sign</code>) removes the <i>unknown publisher</i> warning and most of this friction. Sign the <code>.exe</code> before zipping.</li>
+  <li><b>Versions everywhere:</b> <code>APP_VERSION</code> in the code, <code>version_info.txt</code> for <i>Properties &rarr; Details</i>, the zip name.</li>
+  <li><b>An installer is optional.</b> Inno Setup turns the <code>dist</code> folder into a <code>setup.exe</code> with a Start-menu entry and an uninstaller.</li>
+</ul>
+</section>
+
+<!-- ============================================================== 08 -->
+<section class="page">
+<div class="band"><span class="n">08</span><h2>Troubleshooting</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<table class="dense">
+  <tr><th style="width:32%">Symptom</th><th style="width:28%">Cause</th><th>Fix</th></tr>
+  <tr><td>Build stops at the first PyInstaller <code>INFO</code> line, <i>NativeCommandError</i> <span class="hit">HIT</span></td><td class="plain">Windows PowerShell 5.1 with <code>$ErrorActionPreference = "Stop"</code></td><td class="plain">Judge native tools by <code>$LASTEXITCODE</code> (Section 06).</td></tr>
+  <tr><td>The window flashes and closes; nothing else happens</td><td class="plain">An exception in a windowed app</td><td class="plain">Read the log; rebuild with <code>console=True</code> and start it from a terminal.</td></tr>
+  <tr><td><code>AttributeError: 'NoneType' object has no attribute 'write'</code></td><td class="plain">A library printed in a windowed app</td><td class="plain">Point <code>sys.stdout</code> and <code>sys.stderr</code> at a log file (Section 03).</td></tr>
+  <tr><td><code>ModuleNotFoundError</code> only in the <code>.exe</code></td><td class="plain">A module imported by name at run time</td><td class="plain"><code>collect_submodules("pkg")</code> or <code>hiddenimports</code> (Section 05).</td></tr>
+  <tr><td><code>FileNotFoundError</code> for a file inside a package</td><td class="plain">Data files not collected</td><td class="plain"><code>collect_data_files("pkg")</code> or <code>collect_all</code> (Section 05).</td></tr>
+  <tr><td><code>PackageNotFoundError</code>, <code>StopIteration</code>, <i>Failed to load context</i></td><td class="plain">Package metadata missing</td><td class="plain"><code>copy_metadata("dist-name")</code> (Section 05).</td></tr>
+  <tr><td><i>could not get source code</i></td><td class="plain">torch and transformers read their own <code>.py</code> sources</td><td class="plain">Their hooks collect sources (<code>module_collection_mode = "pyz+py"</code>); keep <code>pyinstaller-hooks-contrib</code> current.</td></tr>
+  <tr><td>The app's fonts look different on other PCs</td><td class="plain">The font is installed on your PC only</td><td class="plain">Bundle the <code>.ttf</code> files and load them with <code>AddFontResourceExW</code> (Section 03).</td></tr>
+  <tr><td>Text processing that works in Colab breaks on Windows: headings doubled, splits wrong <span class="hit">HIT</span></td><td class="plain">Windows text files end lines with <code>\r\n</code>; the lab's chunker expected <code>\n</code></td><td class="plain">Normalize when reading: <code>text.replace("\r\n", "\n")</code>.</td></tr>
+  <tr><td>Download progress sits at 0&nbsp;% and then jumps to 100&nbsp;% <span class="hit">HIT</span></td><td class="plain">Hugging Face's Xet transfer assembles the file at the end</td><td class="plain">Set <code>HF_HUB_DISABLE_XET=1</code> before importing <code>huggingface_hub</code>; plain HTTP grows the file as it goes.</td></tr>
+  <tr><td><i>no kernel image is available for execution on the device</i></td><td class="plain">The GPU is older than the torch build supports (cu130: from sm_75), or the driver is too old</td><td class="plain">Run one tiny GPU operation at start; fall back to the CPU if it fails (<code>cuda_ok()</code> in LocalRAG).</td></tr>
+  <tr><td>Out of memory while loading a model</td><td class="plain">The model is bigger than the free RAM or GPU memory</td><td class="plain">Check free memory first and explain; offer smaller models (<code>_placement()</code> in LocalRAG).</td></tr>
+  <tr><td>Blurry window and text</td><td class="plain">The process is not DPI-aware</td><td class="plain"><code>SetProcessDpiAwareness(1)</code> before creating the window.</td></tr>
+  <tr><td>Antivirus quarantines the <code>.exe</code></td><td class="plain">Heuristics on one-file or UPX-packed programs</td><td class="plain">One-folder build, <code>upx=False</code>, a version resource, code signing; report the false positive.</td></tr>
+  <tr><td>First start is slow, later starts are fast</td><td class="plain">Antivirus scans thousands of new files once</td><td class="plain">Expected. Keep imports lazy so the window still shows at once.</td></tr>
+  <tr><td>GitHub refuses a release file over 2 GiB <span class="hit">HIT</span></td><td class="plain">A CUDA build of torch is about 3 GB of DLLs</td><td class="plain">Leave out DLLs the app never loads (LocalRAG: nine of cuDNN's ten DLLs, Section 05), test the frozen build, or offer the CPU build there.</td></tr>
+  <tr><td>The <code>.exe</code> does nothing when moved out of its folder</td><td class="plain">It needs <code>_internal</code> next to it</td><td class="plain">Ship and move the whole folder; make a shortcut instead.</td></tr>
+</table>
+</section>
+
+<!-- ============================================================== 09 -->
+<section class="page">
+<div class="band"><span class="n">09</span><h2>Worked example: LocalRAG</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<p class="lead"><code>Day2_RAG_Pipeline.ipynb</code> as a desktop app: the same cleaning, chunking, ChromaDB index, similarity gate and grounded prompt, with the Colab parts replaced by a window in KAUST Academy colours, and every step on screen and in a log. Source and downloads: <a href="https://github.com/KAUST-Academy/LocalRAG">github.com/KAUST-Academy/LocalRAG</a>.</p>
+<figure><img class="shot" src="img/app_conversation.png" alt="LocalRAG answering the lab's meal question">
+<figcaption>LocalRAG answering the lab's question with Qwen3.5-4B on the CPU: the answer cites [1], the sources open the handbook page, the retrieved passages and the timings sit under it.</figcaption></figure>
+<ul>
+  <li><b>01 Knowledge base:</b> build a DB from any folder of <code>.pdf .docx .txt .md .csv .html</code> files (subfolders too), or open one built before. Each DB stores how it was built in <code>localrag.json</code>, so an old DB is always searched with its own embedding model.</li>
+  <li><b>Five embedding models</b>, from the lab's MiniLM-L6 to multilingual E5 and Qwen3-Embedding, and the lab's four chunking strategies.</li>
+  <li><b>02 Language models, one at a time:</b> Qwen3.5-4B by default (the lab's model), plus Qwen3.5-0.8B, 2B and 9B, Qwen3-4B-Instruct, Phi-4-mini and SmolLM3-3B, or any Hugging Face id or model folder. Loading one frees the previous one. Without a model, a question shows the retrieved passages.</li>
+  <li><b>03 Retrieval:</b> k and the similarity gate; below the gate the app says it does not know.</li>
+</ul>
+<h3 class="teal">Everything is shown, everything is logged</h3>
+<table>
+  <tr><th style="width:24%">Where</th><th>What it holds</th></tr>
+  <tr><td>Conversation tab</td><td class="plain">Questions, streamed answers, clickable sources, the retrieved passages, and a line of timings: search time, prompt tokens, time to the first token, tokens per second.</td></tr>
+  <tr><td>Retrieved context tab</td><td class="plain">Every passage the DB returned with its similarity as a bar, its chunk id and file, and the gate decision in words.</td></tr>
+  <tr><td>Prompt tab</td><td class="plain">The messages the app sent, and the exact text the model read after its chat template (Qwen's <code>&lt;|im_start|&gt;</code> markup included), with token counts.</td></tr>
+  <tr><td>Log tab</td><td class="plain">Every log line of the app and its libraries, live: downloads, model placement, warnings.</td></tr>
+  <tr><td>Session log, <code>.md</code></td><td class="plain">One readable file per session in <code>%LOCALAPPDATA%\LocalRAG\sessions</code>: DBs built or opened, models loaded, and per question the settings, passages, gate, prompt, answer and timings. Students can hand it in.</td></tr>
+  <tr><td>Session log, <code>.jsonl</code></td><td class="plain">The same events, one JSON record per line, for analysis in pandas.</td></tr>
+</table>
+<figure><img class="shot" src="img/app_context.png" alt="The Retrieved context tab">
+<figcaption>The Retrieved context tab: the gate decision, then each passage with its similarity bar, link, chunk id and full text.</figcaption></figure>
+
+<h3>The project</h3>
+<pre><code>app\
+  local_rag.py                   <span class="c">the window, the --selftest switch, logging; the entry point</span>
+  rag_engine.py                  <span class="c">the lab's pipeline: read, clean, chunk, embed, ChromaDB, gate, prompt</span>
+  session_log.py                 <span class="c">the per-session Markdown and JSONL logs</span>
+  LocalRAG.spec                  <span class="c">the PyInstaller recipe (Section 05)</span>
+  version_info.txt               <span class="c">Properties &gt; Details of LocalRAG.exe</span>
+  build.ps1                      <span class="c">venv, freeze, copy, self-test, zip (Section 06)</span>
+  requirements.txt               <span class="c">pinned versions (Section 04)</span>
+  README.txt                     <span class="c">for the people who receive the zip</span>
+  assets\                        <span class="c">icon, KAUST Academy logo sizes, Raleway and Open Sans</span>
+  sample_docs\gitlab_handbook\   <span class="c">the lab's 38 handbook pages, CC BY-SA 4.0</span>
+  tools\fetch_sample_docs.py     <span class="c">downloads them from the lab's pinned commit</span>
+  tools\calibrate.py             <span class="c">measures each embedding model's similarity gate</span></code></pre>
+
+<h3 class="orange">What lives where</h3>
+<figure>
+<svg viewBox="0 0 760 236" role="img" aria-label="LocalRAG keeps big and personal files out of the zip" font-family="Open Sans, sans-serif">
+  <text x="20" y="22" font-size="15" font-weight="800" fill="#003B75" font-family="Raleway">LocalRAG keeps big and personal files out of the zip</text>
+  <rect x="20" y="40" width="232" height="180" fill="#003B75"/>
+  <text x="34" y="64" font-size="12.5" font-weight="700" fill="white">Shipped in the zip</text>
+  <text x="34" y="82" font-size="10.5" fill="#B7C7DB">replaced by each new version</text>
+  <g font-size="11" fill="white" font-family="Cascadia Mono, Consolas, monospace">
+    <text x="34" y="106">LocalRAG.exe</text><text x="34" y="124">_internal\</text>
+    <text x="34" y="160">models\all-MiniLM-L6-v2\</text><text x="34" y="178">sample_docs\</text><text x="34" y="196">README.txt</text>
+  </g>
+  <text x="48" y="141" font-size="10.5" fill="#B7C7DB">Python, torch, transformers, fonts</text>
+  <rect x="266" y="40" width="232" height="180" fill="#00A6AA" fill-opacity="0.12" stroke="#00A6AA" stroke-width="1.5"/>
+  <text x="280" y="64" font-size="12.5" font-weight="700" fill="#003B75">Downloaded on first use</text>
+  <text x="280" y="82" font-size="10.5" fill="#5B6470">once per PC, shared by every version</text>
+  <text x="280" y="106" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">%USERPROFILE%\.cache\</text>
+  <text x="294" y="124" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">huggingface\</text>
+  <text x="280" y="150" font-size="11" fill="#1F2933">Qwen3.5-4B: 9.3 GB</text>
+  <text x="280" y="168" font-size="11" fill="#1F2933">other models: 0.1 to 19.3 GB</text>
+  <text x="280" y="194" font-size="10.5" fill="#5B6470">after that, also without internet</text>
+  <rect x="512" y="40" width="228" height="180" fill="#F0B500" fill-opacity="0.14" stroke="#F0B500" stroke-width="1.5"/>
+  <text x="526" y="64" font-size="12.5" font-weight="700" fill="#003B75">Written while it runs</text>
+  <text x="526" y="82" font-size="10.5" fill="#5B6470">the user's own data, kept</text>
+  <text x="526" y="106" font-size="11" fill="#1F2933">the DB folders people choose</text>
+  <text x="540" y="124" font-size="10.5" fill="#5B6470">Documents\LocalRAG databases</text>
+  <text x="526" y="150" font-size="11" fill="#1F2933" font-family="Cascadia Mono, Consolas, monospace">%LOCALAPPDATA%\LocalRAG\</text>
+  <text x="540" y="168" font-size="10.5" fill="#5B6470">sessions\  logs\  settings.json</text>
+</svg>
+</figure>
+
+<h3>The build, measured</h3>
+<table>
+  <tr><th style="width:44%"></th><th class="num">CUDA build</th><th class="num">CPU build</th></tr>
+  <tr><td>PyInstaller run</td><td class="num">2 min 47 s</td><td class="num">2 min 51 s</td></tr>
+  <tr><td>Folder, unzipped</td><td class="num">2.97 GB · 8,003 files</td><td class="num">0.88 GB · 7,983 files</td></tr>
+  <tr><td>&nbsp;&nbsp;of which torch</td><td class="num">2.47 GB</td><td class="num">0.38 GB</td></tr>
+  <tr><td>Zip to share (GitHub's limit: 2.15 GB)</td><td class="num">1.89 GB</td><td class="num">0.39 GB</td></tr>
+  <tr><td>Window on screen after a double-click (plugged in / on battery)</td><td class="num">0.7 s / 1.4 s</td><td class="num">0.6 s / 1.4 s</td></tr>
+  <tr><td>AI libraries loaded in the background (plugged in / on battery)</td><td class="num">5.7 s / 12.6 s</td><td class="num">5.4 s / 12.2 s</td></tr>
+  <tr><td>Frozen self-test: Qwen3.5-0.8B answers the meal question</td><td class="num">51 tokens in 2.2 s, GPU</td><td class="num">44 tokens in 4.3 s, CPU</td></tr>
+</table>
+<p class="small">Build PC: Intel Core Ultra 9 285H, 64 GB RAM, NVIDIA GeForce RTX 5070 Laptop GPU (8 GB), Windows 11 Pro. Start-up times are the faster of two starts; on battery the laptop runs at about half speed. GB = 10<sup>9</sup> bytes; Windows Explorer shows about 7&nbsp;% less.</p>
+
+<h3 class="teal">Inside the app: two choices made by measuring</h3>
+<p><b>Where the model runs.</b> Qwen3.5-4B (9.3 GB) does not fit on an 8 GB GPU. Splitting it between GPU and RAM was the slowest option, because the layers kept in RAM are copied to the GPU for every token. So the app puts a model on the GPU only when it fits whole, and otherwise uses the CPU. All three placements gave the lab's answer, <i>$120 USD per day [1]</i>:</p>
+<table>
+  <tr><th>Qwen3.5-4B, the lab's meal question</th><th class="num">First token</th><th class="num">Speed</th><th class="num">Memory</th></tr>
+  <tr><td>Split: 5 GB on the GPU, the rest in RAM</td><td class="num">2.1 s</td><td class="num">1.6 tokens/s</td><td class="num">5.4 GB GPU + 6.4 GB RAM</td></tr>
+  <tr><td>CPU, bfloat16 (what the app does)</td><td class="num">6.4 s</td><td class="num">4.2 tokens/s</td><td class="num">10.9 GB RAM</td></tr>
+  <tr><td>CPU, float32 (the notebook on a CPU)</td><td class="num">7.0 s</td><td class="num">3.2 tokens/s</td><td class="num">20.1 GB RAM</td></tr>
+</table>
+<p><b>The similarity gate per embedding model.</b> The lab measured 0.40 for MiniLM-L6. Other models spread similarities differently, so <code>tools/calibrate.py</code> repeats the lab's measurement for each: the best similarity of the 14 questions the handbook answers against 10 it cannot answer. The default gate sits in the gap, and the app sets it whenever a DB opens:</p>
+<table>
+  <tr><th>Embedding model</th><th class="num">Answer in top 3</th><th class="num">Answerable: best</th><th class="num">Unanswerable: best</th><th class="num">Gate</th></tr>
+  <tr><td>MiniLM-L6 (the lab's)</td><td class="num">10 / 14</td><td class="num">0.45 to 0.77</td><td class="num">0.14 to 0.30</td><td class="num">0.40</td></tr>
+  <tr><td>BGE small</td><td class="num">12 / 14</td><td class="num">0.68 to 0.84</td><td class="num">0.45 to 0.57</td><td class="num">0.62</td></tr>
+  <tr><td>BGE base</td><td class="num">13 / 14</td><td class="num">0.59 to 0.79</td><td class="num">0.36 to 0.50</td><td class="num">0.55</td></tr>
+  <tr><td>E5 small, multilingual</td><td class="num">13 / 14</td><td class="num">0.84 to 0.91</td><td class="num">0.75 to 0.84</td><td class="num">0.82*</td></tr>
+  <tr><td>Qwen3-Embedding 0.6B</td><td class="num">13 / 14</td><td class="num">0.56 to 0.84</td><td class="num">0.20 to 0.38</td><td class="num">0.47</td></tr>
+</table>
+<p class="small">* E5 leaves no clean gap: at 0.82, all 14 answerable questions pass and 9 of the 10 unanswerable ones are refused. Sections chunking, 1,160 chunks from the lab's 38 handbook pages.</p>
+</section>
+
+<!-- ============================================================== A -->
+<section class="page">
+<div class="band"><span class="n">A</span><h2>Checklist before you send the zip</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<div class="two">
+<div>
+<h3>Code</h3>
+<ul class="check">
+  <li>One entry point; <code>multiprocessing.freeze_support()</code> first</li>
+  <li>No relative paths; bundled files through <code>sys._MEIPASS</code></li>
+  <li>Writes only to <code>%LOCALAPPDATA%</code> or folders the user picks</li>
+  <li>Logs everything to a file; <code>sys.stdout</code>/<code>sys.stderr</code> never <code>None</code></li>
+  <li>Heavy imports after the window opens</li>
+  <li>Big downloads on first use, with progress, offline fallback</li>
+  <li>Hardware checked before use (GPU works, model fits)</li>
+  <li>A <code>--selftest</code> switch</li>
+</ul>
+<h3 class="teal">Build</h3>
+<ul class="check">
+  <li>Fresh virtual environment, pinned <code>requirements.txt</code></li>
+  <li>One-folder build, <code>upx=False</code>, icon, version resource</li>
+  <li>Assets bundled: logo, fonts (with their licences)</li>
+  <li>Hidden imports, data and metadata collected; <code>warn-*.txt</code> read</li>
+  <li>The frozen self-test passes</li>
+</ul>
+</div>
+<div>
+<h3 class="orange">Test</h3>
+<ul class="check">
+  <li>Double-click start on your PC, window sharp and fast</li>
+  <li>Windows Sandbox: unzip, run, every button</li>
+  <li>A path with spaces and non-English letters</li>
+  <li>No internet; little RAM; no GPU; 125&nbsp;% and 150&nbsp;% scaling</li>
+  <li>Second start; second user account</li>
+</ul>
+<h3 class="lime">Ship</h3>
+<ul class="check">
+  <li>Version number in code, <code>version_info.txt</code> and zip name</li>
+  <li>README: how to start, the SmartScreen step, what the PC needs, where data and logs go</li>
+  <li>Licences of bundled content, fonts and models named</li>
+  <li>Zipped with <code>tar.exe -a</code>; size fits where you share it</li>
+  <li>Signed, if your organization has a certificate</li>
+</ul>
+</div>
+</div>
+</section>
+
+<!-- ============================================================== B -->
+<section>
+<div class="band"><span class="n">B</span><h2>Other packaging tools</h2><img src="img/kaust_academy_logo_white.png" alt=""></div>
+<table>
+  <tr><th style="width:18%">Tool</th><th style="width:44%">What it does</th><th>Reach for it when</th></tr>
+  <tr><td>PyInstaller</td><td class="plain">Bundles Python, your code and packages into a folder or one file; the most hooks for third-party packages.</td><td class="plain">The default, and what this guide uses.</td></tr>
+  <tr><td>Nuitka</td><td class="plain">Compiles Python to C, then bundles it the same way.</td><td class="plain">You want faster start-up or harder-to-read code and can wait for long builds.</td></tr>
+  <tr><td>cx_Freeze</td><td class="plain">Freezes to a folder, much like PyInstaller; can also produce an MSI installer.</td><td class="plain">You need an MSI.</td></tr>
+  <tr><td>Briefcase (BeeWare)</td><td class="plain">Packages a Python project as a native installer per platform.</td><td class="plain">One code base for Windows, macOS and Linux installers.</td></tr>
+  <tr><td>Inno Setup</td><td class="plain">Not a freezer: turns the <code>dist</code> folder into a <code>setup.exe</code> with shortcuts and an uninstaller.</td><td class="plain">People expect to install, not unzip.</td></tr>
+</table>
+</section>
+
+</body>
+</html>
